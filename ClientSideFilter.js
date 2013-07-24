@@ -63,13 +63,8 @@
         shadowCollection.remove(model, options);
       });
       this.listenTo(collection, "sort", function (col) {
-        if (!this.getQuery()) shadowCollection.reset(col.models);
-      });
-      this.listenTo(collection, "reset", function (col, options) {
-        options = _.extend({reindex: true}, options || {});
-        if (options.reindex && col === collection &&
-            options.from == null && options.to == null) {
-          shadowCollection.reset(col.models);
+        if (!this.getQuery()) {
+            shadowCollection.reset(col.models);
         }
       });
       this._debounceMethods(["search", "clear"]);
