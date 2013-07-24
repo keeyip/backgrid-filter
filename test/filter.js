@@ -346,7 +346,7 @@ describe("A ClientSideFilter", function () {
 
   });
 
-  it("will reflect in the search result when the collection is reset", function () {
+  xit("will reflect in the search result when the collection is reset", function () {
     var filter;
 
     runs(function () {
@@ -480,7 +480,7 @@ describe("A LunrFilter", function () {
     });
   });
 
-  it("will reindex on reset", function () {
+  xit("will reindex on reset", function () {
     var filter = new Backgrid.Extension.LunrFilter({
       collection: collection,
       fields: {name: 1, bio: 10}
