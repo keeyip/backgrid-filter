@@ -179,6 +179,32 @@ describe("A ServerSideFilter", function () {
     expect(collection.state.currentPage).toBe(1);
     expect(collection.state.totalRecords).toBe(3);
     expect(collection.at(0).toJSON()).toEqual({id: 3});
+
+    collection = new Backbone.PageableCollection([{id: 1}, {id: 2}], {
+      url: "http://www.example.com",
+      state: {
+        firstPage: 0,
+        pageSize: 1,
+        totalRecords: 3
+      },
+      queryParams: {
+        totalRecords: null,
+        totalPages: null
+      }
+    });
+    var filter = new Backgrid.Extension.ServerSideFilter({
+      collection: collection
+    });
+    filter.render();
+    collection.getNextPage();
+    filter.searchBox().val("query");
+    filter.$el.submit();
+    expect(url).toBe("http://www.example.com");
+    expect(data).toEqual({q: "query", page: 0, "per_page": 1});
+    expect(collection.length).toBe(1);
+    expect(collection.state.currentPage).toBe(0);
+    expect(collection.state.totalRecords).toBe(3);
+    expect(collection.at(0).toJSON()).toEqual({id: 3});
   });
 
   it("can clear the search box and refetch upon clicking the cross", function () {
@@ -188,9 +214,23 @@ describe("A ServerSideFilter", function () {
     });
     filter.render();
     filter.searchBox().val("query");
-    filter.$el.find(".close").click();
+    filter.$el.find(".clear").click();
     expect(filter.searchBox().val()).toBe("");
     collection.fetch.reset();
+  });
+
+  it("shows the clear button when the search box has text entered, hides it otherwise", function () {
+    var filter = new Backgrid.Extension.ServerSideFilter({
+      collection: collection
+    });
+    filter.render();
+    expect(filter.$el.find(".clear").css("display")).toBe("none");
+
+    filter.searchBox().val("query").trigger("keyup");
+    expect(filter.$el.find(".clear").css("display")).toBe("inline");
+
+    filter.searchBox().val(null).trigger("keyup");
+    expect(filter.$el.find(".clear").css("display")).toBe("none");
   });
 
 });
@@ -207,7 +247,7 @@ describe("A ClientSideFilter", function () {
          {id: 3, name: "bob"}]);
   });
 
-  it("can perform a regex search on keydown and submit, and cancel on clicking the close button", function () {
+  it("can perform a regex search on keydown and submit, and cancel on clicking the clear button", function () {
     var filter;
 
     runs(function () {
@@ -216,6 +256,7 @@ describe("A ClientSideFilter", function () {
         fields: ["name"]
       });
       filter.render();
+
       expect(collection.length).toBe(3);
       expect(collection.at(0).id).toBe(1);
       expect(collection.at(1).id).toBe(2);
@@ -233,7 +274,7 @@ describe("A ClientSideFilter", function () {
     });
 
     runs(function () {
-      filter.$el.find(".close").click();
+      filter.$el.find(".clear").click();
     });
     waitsFor(function () {
       return collection.length === 3;
@@ -422,7 +463,7 @@ describe("A LunrFilter", function () {
          {id: 2, name: "bob", bio: "he is fat but does not crap"}]);
   });
 
-  it("can perform a full-text search on keydown and submit, and cancel on clicking the close button", function () {
+  it("can perform a full-text search on keydown and submit, and cancel on clicking the clear button", function () {
     var filter;
 
     runs(function () {
@@ -447,7 +488,7 @@ describe("A LunrFilter", function () {
     });
 
     runs(function () {
-      filter.$el.find(".close").click();
+      filter.$el.find(".clear").click();
     });
     waitsFor(function () {
       return collection.length === 2;
@@ -610,7 +651,7 @@ describe("A LunrFilter", function () {
     });
   });
 
-  it("can clear the search box and reindex upon clicking the close button", function () {
+  it("can clear the search box and reindex upon clicking the clear button", function () {
     var filter;
 
     runs(function () {
@@ -629,7 +670,7 @@ describe("A LunrFilter", function () {
     }, "collection.length to become 1", 500);
 
     runs(function () {
-      filter.$el.find(".close").click();
+      filter.$el.find(".clear").click();
     });
     waitsFor(function () {
       return collection.length === 2;
